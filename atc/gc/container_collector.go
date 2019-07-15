@@ -239,7 +239,7 @@ func markHijackedContainerAsDestroying(
 }
 
 func findContainer(gardenClient gclient.Client, handle string) (gclient.Container, bool, error) {
-	gardenContainer, err := gardenClient.Lookup(context.TODO(), handle)
+	gardenContainer, err := gardenClient.Lookup(handle)
 	if err != nil {
 		if _, ok := err.(garden.ContainerNotFoundError); ok {
 			return nil, false, nil

@@ -288,7 +288,7 @@ func (action *TaskStep) Run(ctx context.Context, state RunState) error {
 			return err
 		}
 
-		err = container.Stop(context.TODO(), false)
+		err = container.Stop(false)
 		if err != nil {
 			logger.Error("stopping-container", err)
 		}
