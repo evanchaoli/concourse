@@ -1,15 +1,16 @@
 package gclient_test
 
 import (
-	"github.com/concourse/concourse/atc/worker/gclient"
-	gconn "github.com/concourse/concourse/atc/worker/gclient/client/connection"
 	"context"
 	"fmt"
 	"io"
 
+	"github.com/concourse/concourse/atc/worker/gclient"
+	gconn "github.com/concourse/concourse/atc/worker/gclient/connection"
+
 	"code.cloudfoundry.org/garden"
-	"github.com/concourse/concourse/atc/worker/gclient/client/connection/connectionfakes"
 	"code.cloudfoundry.org/garden/gardenfakes"
+	"github.com/concourse/concourse/atc/worker/gclient/connection/connectionfakes"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
@@ -33,13 +34,13 @@ var _ = Describe("Retryable Garden Connection", func() {
 				User: "some-user",
 			}
 			innerConnection.StreamInReturns(nil)
-			err := conn.StreamIn(context.TODO(),"some-handle", spec)
+			err := conn.StreamIn("some-handle", spec)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("calls through to garden", func() {
 			Expect(innerConnection.StreamInCallCount()).To(Equal(1))
-			_, calledHandle, calledSpec := innerConnection.StreamInArgsForCall(0)
+			calledHandle, calledSpec := innerConnection.StreamInArgsForCall(0)
 			Expect(calledHandle).To(Equal("some-handle"))
 			Expect(calledSpec).To(Equal(spec))
 		})
@@ -74,13 +75,13 @@ var _ = Describe("Retryable Garden Connection", func() {
 
 		BeforeEach(func() {
 			innerConnection.CreateReturns("some-handle", nil)
-			gotHandle, err = conn.Create(context.TODO(), spec)
+			gotHandle, err = conn.Create(spec)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("calls through to garden", func() {
 			Expect(innerConnection.CreateCallCount()).To(Equal(1))
-			_, calledSpec := innerConnection.CreateArgsForCall(0)
+			calledSpec := innerConnection.CreateArgsForCall(0)
 			Expect(calledSpec).To(Equal(spec))
 			Expect(gotHandle).To(Equal("some-handle"))
 			Expect(err).NotTo(HaveOccurred())
@@ -90,13 +91,13 @@ var _ = Describe("Retryable Garden Connection", func() {
 	Describe("Destroy", func() {
 		BeforeEach(func() {
 			innerConnection.DestroyReturns(nil)
-			err := conn.Destroy(context.TODO(), "some-handle")
+			err := conn.Destroy("some-handle")
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("calls through to garden", func() {
 			Expect(innerConnection.DestroyCallCount()).To(Equal(1))
-			_, calledHandle := innerConnection.DestroyArgsForCall(0)
+			calledHandle := innerConnection.DestroyArgsForCall(0)
 			Expect(calledHandle).To(Equal("some-handle"))
 		})
 	})
@@ -104,13 +105,13 @@ var _ = Describe("Retryable Garden Connection", func() {
 	Describe("Stop", func() {
 		BeforeEach(func() {
 			innerConnection.StopReturns(nil)
-			err := conn.Stop(context.TODO(), "some-handle", true)
+			err := conn.Stop("some-handle", true)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("calls through to garden", func() {
 			Expect(innerConnection.StopCallCount()).To(Equal(1))
-			_, calledHandle, kill := innerConnection.StopArgsForCall(0)
+			calledHandle, kill := innerConnection.StopArgsForCall(0)
 			Expect(calledHandle).To(Equal("some-handle"))
 			Expect(kill).To(BeTrue())
 		})
@@ -272,13 +273,13 @@ var _ = Describe("Retryable Garden Connection", func() {
 
 			innerConnection.StreamOutReturns(gbytes.NewBuffer(), nil)
 
-			_, err := conn.StreamOut(context.TODO(), "some-handle", spec)
+			_, err := conn.StreamOut("some-handle", spec)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("calls through to garden", func() {
 			Expect(innerConnection.StreamOutCallCount()).To(Equal(1))
-			_, calledHandle, calledSpec := innerConnection.StreamOutArgsForCall(0)
+			calledHandle, calledSpec := innerConnection.StreamOutArgsForCall(0)
 			Expect(calledHandle).To(Equal("some-handle"))
 			Expect(calledSpec).To(Equal(spec))
 		})

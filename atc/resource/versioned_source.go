@@ -1,14 +1,13 @@
 package resource
 
 import (
-	"context"
 	"io"
 	"path"
 
 	"code.cloudfoundry.org/garden"
-	"github.com/concourse/concourse/atc/worker/gclient"
 	"github.com/concourse/concourse/atc"
 	"github.com/concourse/concourse/atc/worker"
+	"github.com/concourse/concourse/atc/worker/gclient"
 )
 
 //go:generate counterfeiter . VersionedSource
@@ -47,7 +46,7 @@ func (vs *putVersionedSource) Metadata() []atc.MetadataField {
 
 func (vs *putVersionedSource) StreamOut(src string) (io.ReadCloser, error) {
 	// to be fixed when we extend context.WithTimeout for baggage claim
-	return vs.container.StreamOut(context.TODO(), garden.StreamOutSpec{
+	return vs.container.StreamOut(garden.StreamOutSpec{
 		// don't use path.Join; it strips trailing slashes
 		Path: vs.resourceDir + "/" + src,
 	})
@@ -59,7 +58,7 @@ func (vs *putVersionedSource) Volume() worker.Volume {
 
 func (vs *putVersionedSource) StreamIn(dst string, src io.Reader) error {
 	// to be fixed when we extend context.WithTimeout for baggage claim
-	return vs.container.StreamIn(context.TODO(), garden.StreamInSpec{
+	return vs.container.StreamIn(garden.StreamInSpec{
 		Path:      path.Join(vs.resourceDir, dst),
 		TarStream: src,
 	})

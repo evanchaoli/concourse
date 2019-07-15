@@ -385,12 +385,12 @@ var _ = Describe("Worker", func() {
 
 			Describe("the found container", func() {
 				It("can be destroyed", func() {
-					err := foundContainer.Destroy(context.TODO())
+					err := foundContainer.Destroy()
 					Expect(err).NotTo(HaveOccurred())
 
 					By("destroying via garden")
 					Expect(fakeGardenClient.DestroyCallCount()).To(Equal(1))
-					_, actualHandle := fakeGardenClient.DestroyArgsForCall(0)
+					actualHandle := fakeGardenClient.DestroyArgsForCall(0)
 					Expect(actualHandle).To(Equal("provider-handle"))
 				})
 			})
@@ -999,7 +999,7 @@ var _ = Describe("Worker", func() {
 				It("creates the container in garden with the input and output volumes in alphabetical order", func() {
 					Expect(fakeGardenClient.CreateCallCount()).To(Equal(1))
 
-					_, actualSpec := fakeGardenClient.CreateArgsForCall(0)
+					actualSpec := fakeGardenClient.CreateArgsForCall(0)
 					Expect(actualSpec).To(Equal(garden.ContainerSpec{
 						Handle:     "some-handle",
 						RootFSPath: "some-image-url",
@@ -1105,7 +1105,7 @@ var _ = Describe("Worker", func() {
 						It("creates the container with correct bind mounts", func() {
 							Expect(fakeGardenClient.CreateCallCount()).To(Equal(1))
 
-							_, actualSpec := fakeGardenClient.CreateArgsForCall(0)
+							actualSpec := fakeGardenClient.CreateArgsForCall(0)
 							Expect(actualSpec).To(Equal(garden.ContainerSpec{
 								Handle:     "some-handle",
 								RootFSPath: "some-image-url",
@@ -1164,7 +1164,7 @@ var _ = Describe("Worker", func() {
 						It("creates the container with correct bind mounts", func() {
 							Expect(fakeGardenClient.CreateCallCount()).To(Equal(1))
 
-							_, actualSpec := fakeGardenClient.CreateArgsForCall(0)
+							actualSpec := fakeGardenClient.CreateArgsForCall(0)
 							Expect(actualSpec).To(Equal(garden.ContainerSpec{
 								Handle:     "some-handle",
 								RootFSPath: "some-image-url",
@@ -1223,7 +1223,7 @@ var _ = Describe("Worker", func() {
 						It("creates the container with correct bind mounts", func() {
 							Expect(fakeGardenClient.CreateCallCount()).To(Equal(1))
 
-							_, actualSpec := fakeGardenClient.CreateArgsForCall(0)
+							actualSpec := fakeGardenClient.CreateArgsForCall(0)
 							Expect(actualSpec).To(Equal(garden.ContainerSpec{
 								Handle:     "some-handle",
 								RootFSPath: "some-image-url",
@@ -1283,7 +1283,7 @@ var _ = Describe("Worker", func() {
 						It("creates the container with correct bind mounts", func() {
 							Expect(fakeGardenClient.CreateCallCount()).To(Equal(1))
 
-							_, actualSpec := fakeGardenClient.CreateArgsForCall(0)
+							actualSpec := fakeGardenClient.CreateArgsForCall(0)
 							Expect(actualSpec).To(Equal(garden.ContainerSpec{
 								Handle:     "some-handle",
 								RootFSPath: "some-image-url",
@@ -1344,7 +1344,7 @@ var _ = Describe("Worker", func() {
 						It("creates the container with correct bind mounts", func() {
 							Expect(fakeGardenClient.CreateCallCount()).To(Equal(1))
 
-							_, actualSpec := fakeGardenClient.CreateArgsForCall(0)
+							actualSpec := fakeGardenClient.CreateArgsForCall(0)
 							Expect(actualSpec).To(Equal(garden.ContainerSpec{
 								Handle:     "some-handle",
 								RootFSPath: "some-image-url",
@@ -1394,7 +1394,7 @@ var _ = Describe("Worker", func() {
 					})
 					It("creates the container in garden, but does not bind mount any certs", func() {
 						Expect(fakeGardenClient.CreateCallCount()).To(Equal(1))
-						_, actualSpec := fakeGardenClient.CreateArgsForCall(0)
+						actualSpec := fakeGardenClient.CreateArgsForCall(0)
 						Expect(actualSpec.BindMounts).ToNot(ContainElement(
 							garden.BindMount{
 								SrcPath: "/the/certs/volume/path",
@@ -1447,7 +1447,7 @@ var _ = Describe("Worker", func() {
 					It("creates the container privileged", func() {
 						Expect(fakeGardenClient.CreateCallCount()).To(Equal(1))
 
-						_, actualSpec := fakeGardenClient.CreateArgsForCall(0)
+						actualSpec := fakeGardenClient.CreateArgsForCall(0)
 						Expect(actualSpec.Privileged).To(BeTrue())
 					})
 
@@ -1473,7 +1473,7 @@ var _ = Describe("Worker", func() {
 					It("does not create or mount a work-dir, as we support this for backwards-compatibility", func() {
 						Expect(fakeGardenClient.CreateCallCount()).To(Equal(1))
 
-						_, actualSpec := fakeGardenClient.CreateArgsForCall(0)
+						actualSpec := fakeGardenClient.CreateArgsForCall(0)
 						Expect(actualSpec.BindMounts).To(Equal([]garden.BindMount{
 							{
 								SrcPath: "some/source",

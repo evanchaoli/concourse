@@ -16,8 +16,8 @@ import (
 	"time"
 
 	"code.cloudfoundry.org/lager/lagertest"
-	. "github.com/concourse/concourse/atc/worker/gclient/client/connection"
-	"github.com/concourse/concourse/atc/worker/gclient/client/connection/connectionfakes"
+	. "github.com/concourse/concourse/atc/worker/gclient/connection"
+	"github.com/concourse/concourse/atc/worker/gclient/connection/connectionfakes"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
@@ -218,7 +218,7 @@ var _ = Describe("Connection", func() {
 			})
 
 			It("sends the ContainerSpec over the connection as JSON", func() {
-				handle, err := connection.Create(context.TODO(), spec)
+				handle, err := connection.Create(spec)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(handle).To(Equal("foohandle"))
 			})
@@ -253,7 +253,7 @@ var _ = Describe("Connection", func() {
 			})
 
 			It("sends the ContainerSpec over the connection as JSON", func() {
-				handle, err := connection.Create(context.TODO(),spec)
+				handle, err := connection.Create(spec)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(handle).To(Equal("foohandle"))
 			})
@@ -270,7 +270,7 @@ var _ = Describe("Connection", func() {
 			})
 
 			It("should stop the container", func() {
-				err := connection.Destroy(context.TODO(),"foo")
+				err := connection.Destroy("foo")
 				Expect(err).ToNot(HaveOccurred())
 			})
 		})
@@ -284,7 +284,7 @@ var _ = Describe("Connection", func() {
 			})
 
 			It("return an appropriate error with the message", func() {
-				err := connection.Destroy(context.TODO(),"foo")
+				err := connection.Destroy("foo")
 				Expect(err).To(MatchError(garden.ContainerNotFoundError{Handle: "some handle"}))
 			})
 		})
@@ -302,7 +302,7 @@ var _ = Describe("Connection", func() {
 		})
 
 		It("should stop the container", func() {
-			err := connection.Stop(context.TODO(),"foo", true)
+			err := connection.Stop("foo", true)
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})
@@ -442,7 +442,7 @@ var _ = Describe("Connection", func() {
 		})
 
 		It("should return the list of containers", func() {
-			handles, err := connection.List(context.TODO(), map[string]string{"foo": "bar"})
+			handles, err := connection.List(map[string]string{"foo": "bar"})
 
 			Expect(err).ToNot(HaveOccurred())
 			Expect(handles).To(Equal([]string{"container1", "container2", "container3"}))
@@ -861,7 +861,7 @@ var _ = Describe("Connection", func() {
 			It("tells garden.to stream, and then streams the content as a series of chunks", func() {
 				buffer := bytes.NewBufferString("chunk-1chunk-2")
 
-				err := connection.StreamIn(context.TODO(),"foo-handle", garden.StreamInSpec{User: "alice", Path: "/bar", TarStream: buffer})
+				err := connection.StreamIn("foo-handle", garden.StreamInSpec{User: "alice", Path: "/bar", TarStream: buffer})
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(server.ReceivedRequests()).To(HaveLen(1))
@@ -880,7 +880,7 @@ var _ = Describe("Connection", func() {
 
 			It("returns an error on close", func() {
 				buffer := bytes.NewBufferString("chunk-1chunk-2")
-				err := connection.StreamIn(context.TODO(),"foo-handle", garden.StreamInSpec{User: "bob", Path: "/bar", TarStream: buffer})
+				err := connection.StreamIn("foo-handle", garden.StreamInSpec{User: "bob", Path: "/bar", TarStream: buffer})
 				Expect(err).To(HaveOccurred())
 
 				Expect(server.ReceivedRequests()).To(HaveLen(1))
@@ -903,7 +903,7 @@ var _ = Describe("Connection", func() {
 			It("returns an error on close", func() {
 				buffer := bytes.NewBufferString("chunk-1chunk-2")
 
-				err := connection.StreamIn(context.TODO(),"foo-handle", garden.StreamInSpec{User: "bob", Path: "/bar", TarStream: buffer})
+				err := connection.StreamIn("foo-handle", garden.StreamInSpec{User: "bob", Path: "/bar", TarStream: buffer})
 				Expect(err).To(HaveOccurred())
 
 				Expect(server.ReceivedRequests()).To(HaveLen(1))
@@ -923,7 +923,7 @@ var _ = Describe("Connection", func() {
 			})
 
 			It("asks garden.for the given file, then reads its content", func() {
-				reader, err := connection.StreamOut(context.TODO(),"foo-handle", garden.StreamOutSpec{User: "frank", Path: "/bar"})
+				reader, err := connection.StreamOut("foo-handle", garden.StreamOutSpec{User: "frank", Path: "/bar"})
 				Expect(err).ToNot(HaveOccurred())
 
 				readBytes, err := ioutil.ReadAll(reader)
@@ -947,7 +947,7 @@ var _ = Describe("Connection", func() {
 			})
 
 			It("asks garden.for the given file, then reads its content", func() {
-				reader, err := connection.StreamOut(context.TODO(),"foo-handle", garden.StreamOutSpec{User: "deandra", Path: "/bar"})
+				reader, err := connection.StreamOut("foo-handle", garden.StreamOutSpec{User: "deandra", Path: "/bar"})
 				Expect(err).ToNot(HaveOccurred())
 
 				_, err = ioutil.ReadAll(reader)

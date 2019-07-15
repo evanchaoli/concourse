@@ -137,7 +137,7 @@ func (resource *resource) runScript(
 		return json.Unmarshal(stdout.Bytes(), output)
 
 	case <-ctx.Done():
-		resource.container.Stop(ctx, false)
+		resource.container.Stop(false)
 		<-processExited
 		return ctx.Err()
 	}

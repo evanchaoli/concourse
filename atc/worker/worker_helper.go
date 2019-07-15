@@ -50,7 +50,6 @@ func (w workerHelper) createGardenContainer(
 	}
 
 	return w.gardenClient.Create(
-		ctx,
 		garden.ContainerSpec{
 		Handle:     handleToCreate,
 		RootFSPath: fetchedImage.URL,

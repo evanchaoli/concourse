@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"code.cloudfoundry.org/garden"
-	"github.com/concourse/concourse/atc/worker/gclient/client/connection"
+	"github.com/concourse/concourse/atc/worker/gclient/connection"
 )
 
 type RetryableConnection struct {

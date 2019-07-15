@@ -86,10 +86,9 @@ type FakeContainer struct {
 		result1 garden.MemoryLimits
 		result2 error
 	}
-	DestroyStub        func(context.Context) error
+	DestroyStub        func() error
 	destroyMutex       sync.RWMutex
 	destroyArgsForCall []struct {
-		arg1 context.Context
 	}
 	destroyReturns struct {
 		result1 error
@@ -242,11 +241,10 @@ type FakeContainer struct {
 	setPropertyReturnsOnCall map[int]struct {
 		result1 error
 	}
-	StopStub        func(context.Context, bool) error
+	StopStub        func(bool) error
 	stopMutex       sync.RWMutex
 	stopArgsForCall []struct {
-		arg1 context.Context
-		arg2 bool
+		arg1 bool
 	}
 	stopReturns struct {
 		result1 error
@@ -254,11 +252,10 @@ type FakeContainer struct {
 	stopReturnsOnCall map[int]struct {
 		result1 error
 	}
-	StreamInStub        func(context.Context, garden.StreamInSpec) error
+	StreamInStub        func(garden.StreamInSpec) error
 	streamInMutex       sync.RWMutex
 	streamInArgsForCall []struct {
-		arg1 context.Context
-		arg2 garden.StreamInSpec
+		arg1 garden.StreamInSpec
 	}
 	streamInReturns struct {
 		result1 error
@@ -266,11 +263,10 @@ type FakeContainer struct {
 	streamInReturnsOnCall map[int]struct {
 		result1 error
 	}
-	StreamOutStub        func(context.Context, garden.StreamOutSpec) (io.ReadCloser, error)
+	StreamOutStub        func(garden.StreamOutSpec) (io.ReadCloser, error)
 	streamOutMutex       sync.RWMutex
 	streamOutArgsForCall []struct {
-		arg1 context.Context
-		arg2 garden.StreamOutSpec
+		arg1 garden.StreamOutSpec
 	}
 	streamOutReturns struct {
 		result1 io.ReadCloser
@@ -654,16 +650,15 @@ func (fake *FakeContainer) CurrentMemoryLimitsReturnsOnCall(i int, result1 garde
 	}{result1, result2}
 }
 
-func (fake *FakeContainer) Destroy(arg1 context.Context) error {
+func (fake *FakeContainer) Destroy() error {
 	fake.destroyMutex.Lock()
 	ret, specificReturn := fake.destroyReturnsOnCall[len(fake.destroyArgsForCall)]
 	fake.destroyArgsForCall = append(fake.destroyArgsForCall, struct {
-		arg1 context.Context
-	}{arg1})
-	fake.recordInvocation("Destroy", []interface{}{arg1})
+	}{})
+	fake.recordInvocation("Destroy", []interface{}{})
 	fake.destroyMutex.Unlock()
 	if fake.DestroyStub != nil {
-		return fake.DestroyStub(arg1)
+		return fake.DestroyStub()
 	}
 	if specificReturn {
 		return ret.result1
@@ -678,17 +673,10 @@ func (fake *FakeContainer) DestroyCallCount() int {
 	return len(fake.destroyArgsForCall)
 }
 
-func (fake *FakeContainer) DestroyCalls(stub func(context.Context) error) {
+func (fake *FakeContainer) DestroyCalls(stub func() error) {
 	fake.destroyMutex.Lock()
 	defer fake.destroyMutex.Unlock()
 	fake.DestroyStub = stub
-}
-
-func (fake *FakeContainer) DestroyArgsForCall(i int) context.Context {
-	fake.destroyMutex.RLock()
-	defer fake.destroyMutex.RUnlock()
-	argsForCall := fake.destroyArgsForCall[i]
-	return argsForCall.arg1
 }
 
 func (fake *FakeContainer) DestroyReturns(result1 error) {
@@ -1419,17 +1407,16 @@ func (fake *FakeContainer) SetPropertyReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeContainer) Stop(arg1 context.Context, arg2 bool) error {
+func (fake *FakeContainer) Stop(arg1 bool) error {
 	fake.stopMutex.Lock()
 	ret, specificReturn := fake.stopReturnsOnCall[len(fake.stopArgsForCall)]
 	fake.stopArgsForCall = append(fake.stopArgsForCall, struct {
-		arg1 context.Context
-		arg2 bool
-	}{arg1, arg2})
-	fake.recordInvocation("Stop", []interface{}{arg1, arg2})
+		arg1 bool
+	}{arg1})
+	fake.recordInvocation("Stop", []interface{}{arg1})
 	fake.stopMutex.Unlock()
 	if fake.StopStub != nil {
-		return fake.StopStub(arg1, arg2)
+		return fake.StopStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
@@ -1444,17 +1431,17 @@ func (fake *FakeContainer) StopCallCount() int {
 	return len(fake.stopArgsForCall)
 }
 
-func (fake *FakeContainer) StopCalls(stub func(context.Context, bool) error) {
+func (fake *FakeContainer) StopCalls(stub func(bool) error) {
 	fake.stopMutex.Lock()
 	defer fake.stopMutex.Unlock()
 	fake.StopStub = stub
 }
 
-func (fake *FakeContainer) StopArgsForCall(i int) (context.Context, bool) {
+func (fake *FakeContainer) StopArgsForCall(i int) bool {
 	fake.stopMutex.RLock()
 	defer fake.stopMutex.RUnlock()
 	argsForCall := fake.stopArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1
 }
 
 func (fake *FakeContainer) StopReturns(result1 error) {
@@ -1480,17 +1467,16 @@ func (fake *FakeContainer) StopReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeContainer) StreamIn(arg1 context.Context, arg2 garden.StreamInSpec) error {
+func (fake *FakeContainer) StreamIn(arg1 garden.StreamInSpec) error {
 	fake.streamInMutex.Lock()
 	ret, specificReturn := fake.streamInReturnsOnCall[len(fake.streamInArgsForCall)]
 	fake.streamInArgsForCall = append(fake.streamInArgsForCall, struct {
-		arg1 context.Context
-		arg2 garden.StreamInSpec
-	}{arg1, arg2})
-	fake.recordInvocation("StreamIn", []interface{}{arg1, arg2})
+		arg1 garden.StreamInSpec
+	}{arg1})
+	fake.recordInvocation("StreamIn", []interface{}{arg1})
 	fake.streamInMutex.Unlock()
 	if fake.StreamInStub != nil {
-		return fake.StreamInStub(arg1, arg2)
+		return fake.StreamInStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
@@ -1505,17 +1491,17 @@ func (fake *FakeContainer) StreamInCallCount() int {
 	return len(fake.streamInArgsForCall)
 }
 
-func (fake *FakeContainer) StreamInCalls(stub func(context.Context, garden.StreamInSpec) error) {
+func (fake *FakeContainer) StreamInCalls(stub func(garden.StreamInSpec) error) {
 	fake.streamInMutex.Lock()
 	defer fake.streamInMutex.Unlock()
 	fake.StreamInStub = stub
 }
 
-func (fake *FakeContainer) StreamInArgsForCall(i int) (context.Context, garden.StreamInSpec) {
+func (fake *FakeContainer) StreamInArgsForCall(i int) garden.StreamInSpec {
 	fake.streamInMutex.RLock()
 	defer fake.streamInMutex.RUnlock()
 	argsForCall := fake.streamInArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1
 }
 
 func (fake *FakeContainer) StreamInReturns(result1 error) {
@@ -1541,17 +1527,16 @@ func (fake *FakeContainer) StreamInReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeContainer) StreamOut(arg1 context.Context, arg2 garden.StreamOutSpec) (io.ReadCloser, error) {
+func (fake *FakeContainer) StreamOut(arg1 garden.StreamOutSpec) (io.ReadCloser, error) {
 	fake.streamOutMutex.Lock()
 	ret, specificReturn := fake.streamOutReturnsOnCall[len(fake.streamOutArgsForCall)]
 	fake.streamOutArgsForCall = append(fake.streamOutArgsForCall, struct {
-		arg1 context.Context
-		arg2 garden.StreamOutSpec
-	}{arg1, arg2})
-	fake.recordInvocation("StreamOut", []interface{}{arg1, arg2})
+		arg1 garden.StreamOutSpec
+	}{arg1})
+	fake.recordInvocation("StreamOut", []interface{}{arg1})
 	fake.streamOutMutex.Unlock()
 	if fake.StreamOutStub != nil {
-		return fake.StreamOutStub(arg1, arg2)
+		return fake.StreamOutStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -1566,17 +1551,17 @@ func (fake *FakeContainer) StreamOutCallCount() int {
 	return len(fake.streamOutArgsForCall)
 }
 
-func (fake *FakeContainer) StreamOutCalls(stub func(context.Context, garden.StreamOutSpec) (io.ReadCloser, error)) {
+func (fake *FakeContainer) StreamOutCalls(stub func(garden.StreamOutSpec) (io.ReadCloser, error)) {
 	fake.streamOutMutex.Lock()
 	defer fake.streamOutMutex.Unlock()
 	fake.StreamOutStub = stub
 }
 
-func (fake *FakeContainer) StreamOutArgsForCall(i int) (context.Context, garden.StreamOutSpec) {
+func (fake *FakeContainer) StreamOutArgsForCall(i int) garden.StreamOutSpec {
 	fake.streamOutMutex.RLock()
 	defer fake.streamOutMutex.RUnlock()
 	argsForCall := fake.streamOutArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1
 }
 
 func (fake *FakeContainer) StreamOutReturns(result1 io.ReadCloser, result2 error) {

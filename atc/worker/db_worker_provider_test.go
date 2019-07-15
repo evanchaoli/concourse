@@ -434,7 +434,7 @@ var _ = Describe("DBProvider", func() {
 					)
 					Expect(err).NotTo(HaveOccurred())
 
-					err = container.Destroy(context.TODO())
+					err = container.Destroy()
 					Expect(err).NotTo(HaveOccurred())
 
 					By("restarting the worker with a new address")
@@ -511,7 +511,7 @@ var _ = Describe("DBProvider", func() {
 
 					Expect(fakeGardenBackend.CreateCallCount()).To(Equal(1))
 
-					err = container.Destroy(context.TODO())
+					err = container.Destroy()
 					Expect(err).NotTo(HaveOccurred())
 
 					Expect(fakeGardenBackend.DestroyCallCount()).To(Equal(1))

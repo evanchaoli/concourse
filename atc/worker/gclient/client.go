@@ -1,10 +1,8 @@
 package gclient
 
 import (
-	"context"
-
 	"code.cloudfoundry.org/garden"
-	"github.com/concourse/concourse/atc/worker/gclient/client/connection"
+	"github.com/concourse/concourse/atc/worker/gclient/connection"
 )
 
 //go:generate counterfeiter . Client
@@ -28,7 +26,7 @@ type Client interface {
 	// * When the handle, if specified, is already taken.
 	// * When one of the bind_mount paths does not exist.
 	// * When resource allocations fail (subnet, user ID, etc).
-	Create(context.Context, garden.ContainerSpec) (Container, error)
+	Create(garden.ContainerSpec) (Container, error)
 
 	// Destroy destroys a container.
 	//
@@ -42,7 +40,7 @@ type Client interface {
 	//
 	// Errors:
 	// * TODO.
-	Destroy(ctx context.Context, handle string) error
+	Destroy(handle string) error
 
 	// Containers lists all containers filtered by Properties (which are ANDed together).
 	//
@@ -60,7 +58,7 @@ type Client interface {
 	//
 	// Errors:
 	// * Container not found.
-	Lookup(ctx context.Context, handle string) (Container, error)
+	Lookup(handle string) (Container, error)
 }
 
 type client struct {
@@ -81,8 +79,8 @@ func (client *client) Capacity() (garden.Capacity, error) {
 	return client.connection.Capacity()
 }
 
-func (client *client) Create(ctx context.Context, spec garden.ContainerSpec) (Container, error) {
-	handle, err := client.connection.Create(ctx, spec)
+func (client *client) Create(spec garden.ContainerSpec) (Container, error) {
+	handle, err := client.connection.Create(spec)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +89,7 @@ func (client *client) Create(ctx context.Context, spec garden.ContainerSpec) (Co
 }
 
 func (client *client) Containers(properties garden.Properties) ([]Container, error) {
-	handles, err := client.connection.List(context.TODO(), properties)
+	handles, err := client.connection.List(properties)
 	if err != nil {
 		return nil, err
 	}
@@ -104,8 +102,8 @@ func (client *client) Containers(properties garden.Properties) ([]Container, err
 	return containers, nil
 }
 
-func (client *client) Destroy(ctx context.Context, handle string) error {
-	err := client.connection.Destroy(ctx, handle)
+func (client *client) Destroy(handle string) error {
+	err := client.connection.Destroy(handle)
 
 	return err
 }
@@ -118,8 +116,8 @@ func (client *client) BulkMetrics(handles []string) (map[string]garden.Container
 	return client.connection.BulkMetrics(handles)
 }
 
-func (client *client) Lookup(ctx context.Context, handle string) (Container, error) {
-	handles, err := client.connection.List(ctx, nil)
+func (client *client) Lookup(handle string) (Container, error) {
+	handles, err := client.connection.List(nil)
 	if err != nil {
 		return nil, err
 	}

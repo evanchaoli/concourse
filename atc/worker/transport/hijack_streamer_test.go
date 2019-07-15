@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"code.cloudfoundry.org/garden"
-	gconn "github.com/concourse/concourse/atc/worker/gclient/client/connection"
+	gconn "github.com/concourse/concourse/atc/worker/gclient/connection"
 	"github.com/concourse/concourse/atc/db/dbfakes"
 	"github.com/concourse/concourse/atc/worker/transport"
 	"github.com/concourse/concourse/atc/worker/transport/transportfakes"
@@ -91,7 +91,7 @@ var _ = Describe("hijackStreamer", func() {
 		})
 
 		JustBeforeEach(func() {
-			actualReadCloser, streamErr = hijackStreamer.Stream(context.TODO(), handler, body, params, query, contentType)
+			actualReadCloser, streamErr = hijackStreamer.Stream(handler, body, params, query, contentType)
 		})
 
 		Context("when httpResponse is success", func() {
