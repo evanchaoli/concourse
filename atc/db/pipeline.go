@@ -38,6 +38,7 @@ type Pipeline interface {
 	TeamName() string
 	Groups() atc.GroupConfigs
 	ConfigVersion() ConfigVersion
+	Config() (atc.Config, error)
 	Public() bool
 	Paused() bool
 
@@ -212,6 +213,32 @@ func (p *pipeline) Reload() (bool, error) {
 	}
 
 	return true, nil
+}
+
+func (p *pipeline) Config() (atc.Config, error) {
+	jobs, err := p.Jobs()
+	if err != nil {
+		return atc.Config{}, fmt.Errorf("failed-to-get-jobs: %s", err)
+	}
+
+	resources, err := p.Resources()
+	if err != nil {
+		return atc.Config{}, fmt.Errorf("failed-to-get-resources: %s", err)
+	}
+
+	resourceTypes, err := p.ResourceTypes()
+	if err != nil {
+		return atc.Config{}, fmt.Errorf("failed-to-get-resources-types: %s", err)
+	}
+
+	config := atc.Config{
+		Groups:        p.Groups(),
+		Resources:     resources.Configs(),
+		ResourceTypes: resourceTypes.Configs(),
+		Jobs:          jobs.Configs(),
+	}
+
+	return config, nil
 }
 
 func (p *pipeline) CreateJobBuild(jobName string) (Build, error) {
