@@ -542,7 +542,7 @@ func validatePlan(c Config, identifier string, plan PlanConfig) ([]ConfigWarning
 	case plan.Task != "":
 		identifier = fmt.Sprintf("%s.task.%s", identifier, plan.Task)
 
-		if plan.TaskConfig == nil && plan.TaskConfigPath == "" {
+		if plan.TaskConfig == nil && plan.ConfigPath == "" {
 			errorMessages = append(errorMessages, identifier+" does not specify any task configuration")
 		}
 
@@ -553,7 +553,7 @@ func validatePlan(c Config, identifier string, plan PlanConfig) ([]ConfigWarning
 			})
 		}
 
-		if plan.TaskConfig != nil && plan.TaskConfigPath != "" {
+		if plan.TaskConfig != nil && plan.ConfigPath != "" {
 			errorMessages = append(errorMessages, identifier+" specifies both `file` and `config` in a task step")
 		}
 
@@ -572,7 +572,11 @@ func validatePlan(c Config, identifier string, plan PlanConfig) ([]ConfigWarning
 		)
 
 	case plan.SetPipeline != "":
-		// TODO
+		identifier = fmt.Sprintf("%s.set_pipeline.%s", identifier, plan.SetPipeline)
+
+		if plan.ConfigPath == "" {
+			errorMessages = append(errorMessages, identifier+" does not specify any pipeline configuration")
+		}
 
 	case plan.Try != nil:
 		subIdentifier := fmt.Sprintf("%s.try", identifier)
@@ -659,7 +663,7 @@ func validateInapplicableFields(inapplicableFields []string, plan PlanConfig, id
 				foundInapplicableFields = append(foundInapplicableFields, field)
 			}
 		case "file":
-			if plan.TaskConfigPath != "" {
+			if plan.ConfigPath != "" {
 				foundInapplicableFields = append(foundInapplicableFields, field)
 			}
 		}
