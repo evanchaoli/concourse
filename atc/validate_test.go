@@ -64,9 +64,9 @@ var _ = Describe("ValidateConfig", func() {
 							},
 						},
 						{
-							Task:           "some-task",
-							Privileged:     true,
-							TaskConfigPath: "some/config/path.yml",
+							Task:       "some-task",
+							Privileged: true,
+							ConfigPath: "some/config/path.yml",
 						},
 						{
 							Put: "some-resource",
@@ -354,36 +354,36 @@ var _ = Describe("ValidateConfig", func() {
 								},
 							},
 							{
-								Task:           "some-task",
-								TaskConfigPath: "some/config/path.yml",
+								Task:       "some-task",
+								ConfigPath: "some/config/path.yml",
 								Abort: &PlanConfig{
 									Get: "abort",
 								},
 							},
 							{
-								Task:           "some-task",
-								TaskConfigPath: "some/config/path.yml",
+								Task:       "some-task",
+								ConfigPath: "some/config/path.yml",
 								Error: &PlanConfig{
 									Get: "error",
 								},
 							},
 							{
-								Task:           "some-task",
-								TaskConfigPath: "some/config/path.yml",
+								Task:       "some-task",
+								ConfigPath: "some/config/path.yml",
 								Failure: &PlanConfig{
 									Get: "failure",
 								},
 							},
 							{
-								Task:           "some-task",
-								TaskConfigPath: "some/config/path.yml",
+								Task:       "some-task",
+								ConfigPath: "some/config/path.yml",
 								Ensure: &PlanConfig{
 									Get: "ensure",
 								},
 							},
 							{
-								Task:           "some-task",
-								TaskConfigPath: "some/config/path.yml",
+								Task:       "some-task",
+								ConfigPath: "some/config/path.yml",
 								Success: &PlanConfig{
 									Get: "success",
 								},
@@ -394,8 +394,8 @@ var _ = Describe("ValidateConfig", func() {
 								},
 							},
 							{
-								Task:           "some-task",
-								TaskConfigPath: "some/config/path.yml",
+								Task:       "some-task",
+								ConfigPath: "some/config/path.yml",
 							},
 						},
 					},
@@ -406,8 +406,8 @@ var _ = Describe("ValidateConfig", func() {
 								Get: "another-job",
 							},
 							{
-								Task:           "some-task",
-								TaskConfigPath: "some/config/path.yml",
+								Task:       "some-task",
+								ConfigPath: "some/config/path.yml",
 							},
 						},
 					},
@@ -691,9 +691,9 @@ var _ = Describe("ValidateConfig", func() {
 			Context("when a get plan has task-only fields specified", func() {
 				BeforeEach(func() {
 					job.Plan = append(job.Plan, PlanConfig{
-						Get:            "lol",
-						Privileged:     true,
-						TaskConfigPath: "task.yml",
+						Get:        "lol",
+						Privileged: true,
+						ConfigPath: "task.yml",
 					})
 
 					config.Jobs = append(config.Jobs, job)
@@ -745,8 +745,8 @@ var _ = Describe("ValidateConfig", func() {
 			Context("when a task plan has config path and config specified", func() {
 				BeforeEach(func() {
 					job.Plan = append(job.Plan, PlanConfig{
-						Task:           "lol",
-						TaskConfigPath: "task.yml",
+						Task:       "lol",
+						ConfigPath: "task.yml",
 						TaskConfig: &TaskConfig{
 							Params: TaskEnv{
 								"param1": "value1",
@@ -789,11 +789,11 @@ var _ = Describe("ValidateConfig", func() {
 			Context("when a put plan has invalid fields specified", func() {
 				BeforeEach(func() {
 					job.Plan = append(job.Plan, PlanConfig{
-						Put:            "lol",
-						Passed:         []string{"get", "only"},
-						Trigger:        true,
-						Privileged:     true,
-						TaskConfigPath: "btaskyml",
+						Put:        "lol",
+						Passed:     []string{"get", "only"},
+						Trigger:    true,
+						Privileged: true,
+						ConfigPath: "btaskyml",
 					})
 
 					config.Jobs = append(config.Jobs, job)
@@ -947,7 +947,7 @@ var _ = Describe("ValidateConfig", func() {
 						Success: &PlanConfig{
 							Put: "some-resource",
 						},
-						TaskConfigPath: "job-one-config-path",
+						ConfigPath: "job-one-config-path",
 					})
 
 					job2.Plan = append(job2.Plan, PlanConfig{
@@ -980,7 +980,7 @@ var _ = Describe("ValidateConfig", func() {
 						Success: &PlanConfig{
 							Get: "some-resource",
 						},
-						TaskConfigPath: "job-one-config-path",
+						ConfigPath: "job-one-config-path",
 					})
 
 					job2.Plan = append(job2.Plan, PlanConfig{
@@ -1012,7 +1012,7 @@ var _ = Describe("ValidateConfig", func() {
 						Try: &PlanConfig{
 							Put: "some-resource",
 						},
-						TaskConfigPath: "job-one-config-path",
+						ConfigPath: "job-one-config-path",
 					})
 
 					job2.Plan = append(job2.Plan, PlanConfig{
@@ -1045,7 +1045,7 @@ var _ = Describe("ValidateConfig", func() {
 						Try: &PlanConfig{
 							Get: "some-resource",
 						},
-						TaskConfigPath: "job-one-config-path",
+						ConfigPath: "job-one-config-path",
 					})
 
 					job2.Plan = append(job2.Plan, PlanConfig{
