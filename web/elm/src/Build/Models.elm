@@ -52,3 +52,4 @@ type StepHeaderType
     = StepHeaderPut
     | StepHeaderGet Bool
     | StepHeaderTask
+    | StepHeaderSetPipeline
