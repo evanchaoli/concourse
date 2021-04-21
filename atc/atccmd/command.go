@@ -682,16 +682,14 @@ func (cmd *RunCommand) constructMembers(
 	}
 
 	workerCache, err := db.NewWorkerCache(logger.Session("worker-cache"), backendConn, 1*time.Minute)
+	checkBuildsChan := make(chan db.Build, 5000) // TODO: make 5000 configurable
+
+	apiMembers, err := cmd.constructAPIMembers(logger, reconfigurableSink, apiConn, workerConn, storage, lockFactory, secretManager, policyChecker, workerCache, checkBuildsChan)
 	if err != nil {
 		return nil, err
 	}
 
-	apiMembers, err := cmd.constructAPIMembers(logger, reconfigurableSink, apiConn, workerConn, storage, lockFactory, secretManager, policyChecker, workerCache)
-	if err != nil {
-		return nil, err
-	}
-
-	backendComponents, err := cmd.backendComponents(logger, backendConn, lockFactory, secretManager, policyChecker, workerCache)
+	backendComponents, err := cmd.backendComponents(logger, backendConn, lockFactory, secretManager, policyChecker, workerCache, checkBuildsChan)
 	if err != nil {
 		return nil, err
 	}
@@ -755,6 +753,7 @@ func (cmd *RunCommand) constructAPIMembers(
 	secretManager creds.Secrets,
 	policyChecker policy.Checker,
 	workerCache *db.WorkerCache,
+	checkBuildsChan chan db.Build,
 ) ([]grouper.Member, error) {
 
 	httpClient, err := cmd.skyHttpClient()
@@ -823,7 +822,7 @@ func (cmd *RunCommand) constructAPIMembers(
 		Interval:            cmd.ResourceCheckingInterval,
 		IntervalWithWebhook: cmd.ResourceWithWebhookCheckingInterval,
 		Timeout:             cmd.GlobalResourceCheckTimeout,
-	})
+	}, checkBuildsChan)
 	dbAccessTokenFactory := db.NewAccessTokenFactory(dbConn)
 	dbClock := db.NewClock()
 	dbWall := db.NewWall(dbConn, &dbClock)
@@ -1004,6 +1003,7 @@ func (cmd *RunCommand) backendComponents(
 	secretManager creds.Secrets,
 	policyChecker policy.Checker,
 	workerCache *db.WorkerCache,
+	checkBuildsChan chan db.Build,
 ) ([]RunnableComponent, error) {
 
 	if cmd.Syslog.Address != "" && cmd.Syslog.Transport == "" {
@@ -1028,7 +1028,7 @@ func (cmd *RunCommand) backendComponents(
 		Interval:            cmd.ResourceCheckingInterval,
 		IntervalWithWebhook: cmd.ResourceWithWebhookCheckingInterval,
 		Timeout:             cmd.GlobalResourceCheckTimeout,
-	})
+	}, checkBuildsChan)
 	dbPipelineFactory := db.NewPipelineFactory(dbConn, lockFactory)
 	dbJobFactory := db.NewJobFactory(dbConn, lockFactory)
 	dbPipelineLifecycle := db.NewPipelineLifecycle(dbConn, lockFactory)
@@ -1130,7 +1130,7 @@ func (cmd *RunCommand) backendComponents(
 				Name:     atc.ComponentLidarScanner,
 				Interval: cmd.LidarScannerInterval,
 			},
-			Runnable: lidar.NewScanner(dbCheckFactory),
+			Runnable: lidar.NewScanner(dbCheckFactory, cmd.ExternalURL.String()),
 		},
 		{
 			Component: atc.Component{
@@ -1156,7 +1156,7 @@ func (cmd *RunCommand) backendComponents(
 				Name:     atc.ComponentBuildTracker,
 				Interval: cmd.BuildTrackerInterval,
 			},
-			Runnable: builds.NewTracker(dbBuildFactory, engine),
+			Runnable: builds.NewTracker(dbBuildFactory, engine, checkBuildsChan),
 		},
 		{
 			Component: atc.Component{

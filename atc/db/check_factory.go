@@ -32,11 +32,14 @@ type Checkable interface {
 
 	CheckPlan(atc.Version, time.Duration, ResourceTypes, atc.Source) atc.CheckPlan
 	CreateBuild(context.Context, bool, atc.Plan) (Build, bool, error)
+
+	CreateInMemoryBuild(context.Context, atc.Plan) (Build, error)
+	CheckApiEndpoint() string
 }
 
 //counterfeiter:generate . CheckFactory
 type CheckFactory interface {
-	TryCreateCheck(context.Context, Checkable, ResourceTypes, atc.Version, bool) (Build, bool, error)
+	TryCreateCheck(context.Context, Checkable, ResourceTypes, atc.Version, bool, bool) (Build, bool, error)
 	Resources() ([]Resource, error)
 	ResourceTypes() ([]ResourceType, error)
 }
@@ -53,6 +56,8 @@ type checkFactory struct {
 	defaultCheckTimeout             time.Duration
 	defaultCheckInterval            time.Duration
 	defaultWithWebhookCheckInterval time.Duration
+
+	checkBuildChan chan<-Build
 }
 
 type CheckDurations struct {
@@ -67,6 +72,7 @@ func NewCheckFactory(
 	secrets creds.Secrets,
 	varSourcePool creds.VarSourcePool,
 	durations CheckDurations,
+	checkBuildChan chan<-Build,
 ) CheckFactory {
 	return &checkFactory{
 		conn:        conn,
@@ -80,13 +86,13 @@ func NewCheckFactory(
 		defaultCheckTimeout:             durations.Timeout,
 		defaultCheckInterval:            durations.Interval,
 		defaultWithWebhookCheckInterval: durations.IntervalWithWebhook,
+
+		checkBuildChan: checkBuildChan,
 	}
 }
 
-func (c *checkFactory) TryCreateCheck(ctx context.Context, checkable Checkable, resourceTypes ResourceTypes, from atc.Version, manuallyTriggered bool) (Build, bool, error) {
+func (c *checkFactory) TryCreateCheck(ctx context.Context, checkable Checkable, resourceTypes ResourceTypes, from atc.Version, manuallyTriggered bool, toDB bool) (Build, bool, error) {
 	logger := lagerctx.FromContext(ctx)
-
-	var err error
 
 	sourceDefaults := atc.Source{}
 	parentType, found := resourceTypes.Parent(checkable)
@@ -116,21 +122,32 @@ func (c *checkFactory) TryCreateCheck(ctx context.Context, checkable Checkable, 
 	}
 
 	checkPlan := checkable.CheckPlan(from, interval, resourceTypes.Filter(checkable), sourceDefaults)
-
 	plan := c.planFactory.NewPlan(checkPlan)
 
-	build, created, err := checkable.CreateBuild(ctx, manuallyTriggered, plan)
-	if err != nil {
-		return nil, false, fmt.Errorf("create build: %w", err)
+	if toDB {
+		build, created, err := checkable.CreateBuild(ctx, manuallyTriggered, plan)
+		if err != nil {
+			return nil, false, fmt.Errorf("create check build: %w", err)
+		}
+
+		if !created {
+			return nil, false, nil
+		}
+
+		logger.Info("created-check-build", build.LagerData())
+
+		return build, true, nil
+	} else {
+		build, err := checkable.CreateInMemoryBuild(ctx, plan)
+		if err != nil {
+			return nil, false, err
+		}
+
+		logger.Info("EVAN:created-in-memory-check-build", build.LagerData())
+		c.checkBuildChan <- build
+
+		return build, true, nil
 	}
-
-	if !created {
-		return nil, false, nil
-	}
-
-	logger.Info("created-build", build.LagerData())
-
-	return build, true, nil
 }
 
 func (c *checkFactory) Resources() ([]Resource, error) {
@@ -149,7 +166,7 @@ func (c *checkFactory) Resources() ([]Resource, error) {
 			},
 			sq.And{
 				// find put-only resources that have errored
-				sq.Expr("b.status IN ('aborted','failed','errored')"),
+				sq.Expr("rs.last_check_succeeded = false"),
 				sq.Eq{"ji.resource_id": nil},
 			},
 		}).
