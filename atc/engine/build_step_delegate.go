@@ -33,6 +33,12 @@ type buildStepDelegate struct {
 	stdout          io.Writer
 	policyChecker   policy.Checker
 	artifactSourcer worker.ArtifactSourcer
+
+	// stashed away just so we don't have to query them multiple times
+	cachedPipeline     db.Pipeline
+	cachedResource     db.Resource
+	cachedResourceType db.ResourceType
+	cachedPrototype    db.Prototype
 }
 
 func NewBuildStepDelegate(

@@ -103,7 +103,7 @@ func (d *checkDelegate) WaitToRun(ctx context.Context, scope db.ResourceConfigSc
 			return nil, false, err
 		}
 	}
-	logger.Info("EVAN: WaitToRun before accauire lock")
+
 	var lock lock.Lock = lock.NoopLock{}
 	if d.plan.IsPeriodic() {
 		for {
@@ -124,7 +124,6 @@ func (d *checkDelegate) WaitToRun(ctx context.Context, scope db.ResourceConfigSc
 			}
 		}
 	}
-	logger.Info("EVAN: WaitToRun after accauire lock")
 
 	lastCheck, err := scope.LastCheck()
 	if err != nil {
