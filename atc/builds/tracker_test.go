@@ -29,6 +29,7 @@ type TrackerSuite struct {
 	fakeEngine       *enginefakes.FakeEngine
 
 	tracker *builds.Tracker
+	buildChan chan db.Build
 }
 
 func TestTracker(t *testing.T) {
@@ -40,10 +41,12 @@ func TestTracker(t *testing.T) {
 func (s *TrackerSuite) SetupTest() {
 	s.fakeBuildFactory = new(dbfakes.FakeBuildFactory)
 	s.fakeEngine = new(enginefakes.FakeEngine)
+	s.buildChan = make(chan db.Build, 10)
 
 	s.tracker = builds.NewTracker(
 		s.fakeBuildFactory,
 		s.fakeEngine,
+		s.buildChan,
 	)
 }
 
