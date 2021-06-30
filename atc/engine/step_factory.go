@@ -69,7 +69,6 @@ func (factory *coreStepFactory) GetStep(
 		stepMetadata,
 		containerMetadata,
 		factory.resourceFactory,
-		factory.resourceConfigFactory,
 		factory.resourceCacheFactory,
 		factory.strategy,
 		delegateFactory,

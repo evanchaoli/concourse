@@ -29,11 +29,14 @@ type Checkable interface {
 	CurrentPinnedVersion() atc.Version
 
 	HasWebhook() bool
+	BuildSummary() *atc.BuildSummary
 
 	CheckPlan(atc.Version, time.Duration, ResourceTypes, atc.Source) atc.CheckPlan
 	CreateBuild(context.Context, bool, atc.Plan) (Build, bool, error)
 
 	CreateInMemoryBuild(context.Context, atc.Plan) (Build, error)
+
+	Reload() (bool, error)
 }
 
 //counterfeiter:generate . CheckFactory
@@ -115,9 +118,17 @@ func (c *checkFactory) TryCreateCheck(ctx context.Context, checkable Checkable, 
 		interval = checkable.CheckEvery().Interval
 	}
 
-	if !manuallyTriggered && time.Now().Before(checkable.LastCheckEndTime().Add(interval)) {
-		// skip creating the check if its interval hasn't elapsed yet
-		return nil, false, nil
+	if !manuallyTriggered {
+		if time.Now().Before(checkable.LastCheckEndTime().Add(interval)) {
+			// skip creating the check if its interval hasn't elapsed yet
+			return nil, false, nil
+		}
+
+		buildSummary := checkable.BuildSummary()
+		if buildSummary != nil && buildSummary.Status == atc.StatusStarted && buildSummary.StartTime + int64(interval.Seconds()) > time.Now().Unix() {
+			// skip creating the check if there is a running check on the checkable
+			return nil, false, nil
+		}
 	}
 
 	checkPlan := checkable.CheckPlan(from, interval, resourceTypes.Filter(checkable), sourceDefaults)
@@ -133,7 +144,7 @@ func (c *checkFactory) TryCreateCheck(ctx context.Context, checkable Checkable, 
 			return nil, false, nil
 		}
 
-		logger.Info("created-check-build", build.LagerData())
+		logger.Debug("created-check-build", build.LagerData())
 
 		return build, true, nil
 	} else {
@@ -142,7 +153,7 @@ func (c *checkFactory) TryCreateCheck(ctx context.Context, checkable Checkable, 
 			return nil, false, err
 		}
 
-		logger.Info("EVAN:created-in-memory-check-build", build.LagerData())
+		logger.Debug("created-in-memory-check-build", build.LagerData())
 		c.checkBuildChan <- build
 
 		return build, true, nil

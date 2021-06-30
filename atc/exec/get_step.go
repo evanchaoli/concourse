@@ -73,7 +73,6 @@ type GetStep struct {
 	metadata             StepMetadata
 	containerMetadata    db.ContainerMetadata
 	resourceFactory      resource.ResourceFactory
-	resourceConfigFactory db.ResourceConfigFactory
 	resourceCacheFactory db.ResourceCacheFactory
 	strategy             worker.ContainerPlacementStrategy
 	workerPool           worker.Pool
@@ -86,7 +85,6 @@ func NewGetStep(
 	metadata StepMetadata,
 	containerMetadata db.ContainerMetadata,
 	resourceFactory resource.ResourceFactory,
-	resourceConfigFactory db.ResourceConfigFactory,
 	resourceCacheFactory db.ResourceCacheFactory,
 	strategy worker.ContainerPlacementStrategy,
 	delegateFactory GetDelegateFactory,
@@ -98,7 +96,6 @@ func NewGetStep(
 		metadata:             metadata,
 		containerMetadata:    containerMetadata,
 		resourceFactory:      resourceFactory,
-		resourceConfigFactory: resourceConfigFactory,
 		resourceCacheFactory: resourceCacheFactory,
 		strategy:             strategy,
 		delegateFactory:      delegateFactory,
