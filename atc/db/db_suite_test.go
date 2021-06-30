@@ -123,7 +123,7 @@ var _ = BeforeEach(func() {
 		Timeout:             defaultCheckTimeout,
 		Interval:            defaultCheckInterval,
 		IntervalWithWebhook: defaultWebhookCheckInterval,
-	})
+	}, nil)
 	workerBaseResourceTypeFactory = db.NewWorkerBaseResourceTypeFactory(dbConn)
 	workerTaskCacheFactory = db.NewWorkerTaskCacheFactory(dbConn)
 	userFactory = db.NewUserFactory(dbConn)

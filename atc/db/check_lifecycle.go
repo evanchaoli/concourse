@@ -15,6 +15,7 @@ func NewCheckLifecycle(conn Conn) CheckLifecycle {
 	}
 }
 
+// TODO: fix this function as build_id is deleted from table resources.
 func (cl *checkLifecycle) DeleteCompletedChecks() error {
 	_, err := cl.conn.Exec(`
       WITH resource_builds AS (

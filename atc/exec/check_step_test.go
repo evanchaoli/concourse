@@ -3,6 +3,7 @@ package exec_test
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -101,6 +102,12 @@ var _ = Describe("CheckStep", func() {
 
 		fakeResourceConfigScope = new(dbfakes.FakeResourceConfigScope)
 		fakeDelegate.FindOrCreateScopeReturns(fakeResourceConfigScope, nil)
+		fakeDelegate.UpdateScopeLastCheckStartTimeStub = func(scope db.ResourceConfigScope) (bool, error) {
+			return scope.UpdateLastCheckStartTime(int(time.Now().Unix()), nil)
+		}
+		fakeDelegate.UpdateScopeLastCheckEndTimeStub = func(scope db.ResourceConfigScope, succeeded bool) (bool, error) {
+			return scope.UpdateLastCheckEndTime(succeeded)
+		}
 
 		fakeDelegateFactory.CheckDelegateReturns(fakeDelegate)
 
@@ -666,7 +673,7 @@ var _ = Describe("CheckStep", func() {
 
 				Context("before running the check", func() {
 					BeforeEach(func() {
-						fakeResourceConfigScope.UpdateLastCheckStartTimeStub = func() (bool, error) {
+						fakeResourceConfigScope.UpdateLastCheckStartTimeStub = func(int, *json.RawMessage) (bool, error) {
 							Expect(fakeClient.RunCheckStepCallCount()).To(Equal(0))
 							return true, nil
 						}
