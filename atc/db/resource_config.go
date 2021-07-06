@@ -217,12 +217,28 @@ func (r *ResourceConfigDescriptor) findWithParentID(tx Tx, rc *resourceConfig, p
 	return true, nil
 }
 
+// updateLastReferenced is called extremely frequently, which generates a lot of
+// slow queries. However, last_referenced is only used for gc, it doesn't have to
+// be super precise. Based on that, let's query first, and if last_update is within
+// 1 minutes, then skip current update.
 func (r *ResourceConfigDescriptor) updateLastReferenced(tx Tx, rc *resourceConfig, parentColumnName string, parentID int) (bool, error) {
+	//found, err := r.findWithParentID(tx, rc, parentColumnName, parentID)
+	//if err != nil || !found {
+	//	return found, err
+	//}
+	//
+	//if rc.lastReferenced.Add(time.Minute).After(time.Now()) {
+	//	return true, nil
+	//}
+
 	err := psql.Update("resource_configs").
 		Set("last_referenced", sq.Expr("now()")).
-		Where(sq.Eq{
-			parentColumnName: parentID,
-			"source_hash":    mapHash(r.Source),
+		Where(sq.And{
+			sq.Eq{
+				parentColumnName: parentID,
+				"source_hash":    mapHash(r.Source),
+			},
+			sq.Expr("last_referenced < now() - '60 seconds'::interval"),
 		}).
 		Suffix("RETURNING id, last_referenced").
 		RunWith(tx).

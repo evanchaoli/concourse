@@ -25,6 +25,7 @@ type Checkable interface {
 	Tags() atc.Tags
 	CheckEvery() *atc.CheckEvery
 	CheckTimeout() string
+	LastCheckStartTime() time.Time
 	LastCheckEndTime() time.Time
 	CurrentPinnedVersion() atc.Version
 
@@ -119,14 +120,10 @@ func (c *checkFactory) TryCreateCheck(ctx context.Context, checkable Checkable, 
 	}
 
 	if !manuallyTriggered {
-		if time.Now().Before(checkable.LastCheckEndTime().Add(interval)) {
+		// Use last check's start time instead of end time will make check period
+		// more precise.
+		if time.Now().Before(checkable.LastCheckStartTime().Add(interval)) {
 			// skip creating the check if its interval hasn't elapsed yet
-			return nil, false, nil
-		}
-
-		buildSummary := checkable.BuildSummary()
-		if buildSummary != nil && buildSummary.Status == atc.StatusStarted && buildSummary.StartTime + int64(interval.Seconds()) > time.Now().Unix() {
-			// skip creating the check if there is a running check on the checkable
 			return nil, false, nil
 		}
 	}
@@ -180,6 +177,7 @@ func (c *checkFactory) Resources() ([]Resource, error) {
 				sq.Eq{"ji.resource_id": nil},
 			},
 		}).
+		OrderBy("r.id ASC").
 		RunWith(c.conn).
 		Query()
 
@@ -209,6 +207,7 @@ func (c *checkFactory) ResourceTypes() ([]ResourceType, error) {
 		Where(sq.And{
 			sq.Eq{"p.paused": false},
 		}).
+		OrderBy("r.id ASC").
 		RunWith(c.conn).
 		Query()
 
