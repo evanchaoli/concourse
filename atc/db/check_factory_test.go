@@ -91,7 +91,7 @@ var _ = Describe("CheckFactory", func() {
 
 			Context("when the interval has not elapsed", func() {
 				BeforeEach(func() {
-					fakeResource.LastCheckEndTimeReturns(time.Now().Add(defaultCheckInterval))
+					fakeResource.LastCheckStartTimeReturns(time.Now().Add(defaultCheckInterval))
 				})
 
 				It("does not create a build for the resource", func() {
@@ -140,7 +140,7 @@ var _ = Describe("CheckFactory", func() {
 
 			Context("when the default webhook interval has not elapsed", func() {
 				BeforeEach(func() {
-					fakeResource.LastCheckEndTimeReturns(time.Now().Add(-(defaultWebhookCheckInterval / 2)))
+					fakeResource.LastCheckStartTimeReturns(time.Now().Add(-(defaultWebhookCheckInterval / 2)))
 				})
 
 				It("does not create a build for the resource", func() {
@@ -201,7 +201,7 @@ var _ = Describe("CheckFactory", func() {
 
 				Context("when the parent type's interval has not elapsed", func() {
 					BeforeEach(func() {
-						fakeResourceType.LastCheckEndTimeReturns(time.Now().Add(defaultCheckInterval))
+						fakeResourceType.LastCheckStartTimeReturns(time.Now().Add(defaultCheckInterval))
 					})
 
 					It("does not create a build for the parent type", func() {
