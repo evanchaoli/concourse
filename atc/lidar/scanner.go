@@ -94,14 +94,17 @@ func (s *scanner) scanResources(ctx context.Context, resources []db.Resource, re
 	waitGroup := new(sync.WaitGroup)
 
 	totalSize := len(resources)
-	batchSize := 1 + totalSize/s.chunks
-	if batchSize > totalSize {
-		batchSize = totalSize
-	}
-
+	batchSize := totalSize
 	index := 0
-	for index < totalSize && lastScannedId > resources[index].ID() {
-		index++
+	if s.chunks > 1 {
+		batchSize := 1 + totalSize/s.chunks
+		if batchSize > totalSize {
+			batchSize = totalSize
+		}
+
+		for index < totalSize && lastScannedId > resources[index].ID() {
+			index++
+		}
 	}
 
 	for i := 0; i < batchSize; i++ {
@@ -140,14 +143,17 @@ func (s *scanner) scanResourceTypes(ctx context.Context, resourceTypes db.Resour
 	waitGroup := new(sync.WaitGroup)
 
 	totalSize := len(resourceTypes)
-	batchSize := 1 + totalSize/s.chunks
-	if batchSize > totalSize {
-		batchSize = totalSize
-	}
-
+	batchSize := totalSize
 	index := 0
-	for index < totalSize && lastScannedId > resourceTypes[index].ID() {
-		index++
+	if s.chunks > 1 {
+		batchSize := 1 + totalSize/s.chunks
+		if batchSize > totalSize {
+			batchSize = totalSize
+		}
+
+		for index < totalSize && lastScannedId > resourceTypes[index].ID() {
+			index++
+		}
 	}
 
 	for i := 0; i < batchSize; i++ {
