@@ -118,7 +118,7 @@ func (d *checkDelegate) WaitToRun(ctx context.Context, scope db.ResourceConfigSc
 		if acquired {
 			lock = scopeLock
 		} else {
-			return lock, false, err
+			return lock, false, nil
 		}
 	}
 
