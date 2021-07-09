@@ -210,7 +210,7 @@ func (step *CheckStep) run(ctx context.Context, state RunState, delegate CheckDe
 		if err != nil {
 			return false, fmt.Errorf("update check end time: %w", err)
 		}
-	} else {
+	} else if !step.plan.IsPeriodic() {
 		latestVersion, found, err := scope.LatestVersion()
 		if err != nil {
 			return false, fmt.Errorf("get latest version: %w", err)

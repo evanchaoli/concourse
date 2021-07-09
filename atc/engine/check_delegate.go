@@ -106,36 +106,40 @@ func (d *checkDelegate) WaitToRun(ctx context.Context, scope db.ResourceConfigSc
 
 	var lock lock.Lock = lock.NoopLock{}
 	if d.plan.IsPeriodic() {
-		//scopeLock, acquired, err := scope.AcquireResourceCheckingLock(logger)
-		//if err != nil {
-		//	return nil, false, fmt.Errorf("acquire lock: %w", err)
-		//}
-		//
-		//// For Lidar checks or manually triggered checks, if not acquire lock,
-		//// meaning there is a check on the resource is running, so that instead
-		//// of waiting for current check to finish, we can just abort current
-		//// check.
-		//if acquired {
-		//	lock = scopeLock
-		//} else {
-		//	return lock, false, nil
-		//}
-
-		for {
-			var acquired bool
-			lock, acquired, err = scope.AcquireResourceCheckingLock(logger)
+		if !d.build.IsManuallyTriggered() {
+			// For Lidar checks or manually triggered checks, if not acquire lock,
+			// meaning there is a check on the resource is running, so that instead
+			// of waiting for current check to finish, we can just abort current
+			// check.
+			scopeLock, acquired, err := scope.AcquireResourceCheckingLock(logger)
 			if err != nil {
 				return nil, false, fmt.Errorf("acquire lock: %w", err)
 			}
 
 			if acquired {
-				break
+				lock = scopeLock
+			} else {
+				return lock, false, nil
 			}
+		} else {
+			// For manually triggered check build, it expects to return a new version,
+			// so let's wait for the lock.
+			for {
+				var acquired bool
+				lock, acquired, err = scope.AcquireResourceCheckingLock(logger)
+				if err != nil {
+					return nil, false, fmt.Errorf("acquire lock: %w", err)
+				}
 
-			select {
-			case <-ctx.Done():
-				return nil, false, ctx.Err()
-			case <-d.clock.After(time.Second):
+				if acquired {
+					break
+				}
+
+				select {
+				case <-ctx.Done():
+					return nil, false, ctx.Err()
+				case <-d.clock.After(time.Second):
+				}
 			}
 		}
 	}
