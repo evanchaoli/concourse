@@ -62,7 +62,7 @@ type GetDelegate interface {
 	UpdateVersion(lager.Logger, atc.GetPlan, runtime.VersionResult)
 
 	ResourceCacheUser() db.ResourceCacheUser
-	ContainerOwner(id atc.PlanID) db.ContainerOwner
+	ContainerOwner(planId atc.PlanID) db.ContainerOwner
 }
 
 // GetStep will fetch a version of a resource on a worker that supports the

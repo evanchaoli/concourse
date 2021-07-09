@@ -300,7 +300,7 @@ func (step *CheckStep) runCheck(
 
 	chosenWorker, _, err := step.workerPool.SelectWorker(
 		lagerctx.NewContext(ctx, logger),
-		step.containerOwner(resourceConfig),
+		step.containerOwner(delegate, resourceConfig),
 		containerSpec,
 		workerSpec,
 		step.strategy,
@@ -330,7 +330,7 @@ func (step *CheckStep) runCheck(
 
 	return chosenWorker.RunCheckStep(
 		lagerctx.NewContext(processCtx, logger),
-		step.containerOwner(resourceConfig),
+		step.containerOwner(delegate, resourceConfig),
 		containerSpec,
 		step.containerMetadata,
 		processSpec,
@@ -339,13 +339,13 @@ func (step *CheckStep) runCheck(
 	)
 }
 
-func (step *CheckStep) containerOwner(resourceConfig db.ResourceConfig) db.ContainerOwner {
+func (step *CheckStep) containerOwner(delegate CheckDelegate, resourceConfig db.ResourceConfig) db.ContainerOwner {
 	if step.plan.Resource == "" && step.plan.ResourceType == "" {
-		return db.NewBuildStepContainerOwner(
-			step.metadata.BuildID,
-			step.planID,
-			step.metadata.TeamID,
-		)
+		return delegate.ContainerOwner(step.planID)
+	}
+
+	if resourceConfig.CreatedByBaseResourceType() != nil && resourceConfig.CreatedByBaseResourceType().UniqueVersionHistory {
+		return delegate.ContainerOwner(step.planID)
 	}
 
 	expires := db.ContainerOwnerExpiries{
