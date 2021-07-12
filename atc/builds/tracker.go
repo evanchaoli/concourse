@@ -51,7 +51,7 @@ func (bt *Tracker) Run(ctx context.Context, _ string) (component.RunResult, erro
 	}
 
 	for _, b := range builds {
-		bt.trackBuild(logger, b)
+		bt.trackBuild(logger, b, true)
 	}
 
 	return nil, nil
@@ -61,9 +61,11 @@ func (bt *Tracker) Drain(ctx context.Context) {
 	bt.engine.Drain(ctx)
 }
 
-func (bt *Tracker) trackBuild(logger lager.Logger, b db.Build) {
-	if _, exists := bt.running.LoadOrStore(b.ID(), true); exists {
-		return
+func (bt *Tracker) trackBuild(logger lager.Logger, b db.Build, dupCheck bool) {
+	if dupCheck {
+		if _, exists := bt.running.LoadOrStore(b.ID(), true); exists {
+			return
+		}
 	}
 
 	go func(build db.Build) {
@@ -107,8 +109,8 @@ func (bt *Tracker) trackInMemoryBuilds(logger lager.Logger) {
 			if b == nil {
 				return
 			}
-			logger.Debug("received-in-memory-build", lager.Data{"id": b.ID()})
-			bt.trackBuild(logger, b)
+			logger.Debug("received-in-memory-build", b.LagerData())
+			bt.trackBuild(logger, b, false)
 		}
 	}
 }

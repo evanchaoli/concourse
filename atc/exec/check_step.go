@@ -44,7 +44,7 @@ type CheckDelegate interface {
 	FindOrCreateScope(db.ResourceConfig) (db.ResourceConfigScope, error)
 	WaitToRun(context.Context, db.ResourceConfigScope) (lock.Lock, bool, error)
 	PointToCheckedConfig(db.ResourceConfigScope) error
-	UpdateScopeLastCheckStartTime(db.ResourceConfigScope) (bool, error)
+	UpdateScopeLastCheckStartTime(db.ResourceConfigScope) (bool, int, error)
 	UpdateScopeLastCheckEndTime(db.ResourceConfigScope, bool) (bool, error)
 }
 
@@ -165,10 +165,14 @@ func (step *CheckStep) run(ctx context.Context, state RunState, delegate CheckDe
 
 		metric.Metrics.ChecksStarted.Inc()
 
-		_, err = delegate.UpdateScopeLastCheckStartTime(scope)
+		_, buildId, err := delegate.UpdateScopeLastCheckStartTime(scope)
 		if err != nil {
 			return false, fmt.Errorf("update check start time: %w", err)
 		}
+
+		// Update build in logger
+		logger = logger.WithData(lager.Data{"build": buildId})
+		ctx = lagerctx.NewContext(ctx, logger)
 
 		result, runErr := step.runCheck(ctx, logger, delegate, timeout, resourceConfig, source, resourceTypes, fromVersion)
 		if runErr != nil {
