@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/concourse/concourse/atc/util"
 	"strconv"
 	"time"
 
@@ -51,7 +52,7 @@ type ResourceType interface {
 
 	CheckPlan(atc.Version, time.Duration, ResourceTypes, atc.Source) atc.CheckPlan
 	CreateBuild(context.Context, bool, atc.Plan) (Build, bool, error)
-	CreateInMemoryBuild(context.Context, atc.Plan) (Build, error)
+	CreateInMemoryBuild(context.Context, atc.Plan, util.SequenceGenerator) (Build, error)
 
 	Version() atc.Version
 
@@ -325,8 +326,8 @@ func (r *resourceType) CreateBuild(ctx context.Context, manuallyTriggered bool, 
 	return build, true, nil
 }
 
-func (r *resourceType) CreateInMemoryBuild(ctx context.Context, plan atc.Plan) (Build, error) {
-	return newRunningInMemoryCheckBuild(r.conn, r.lockFactory, r, plan, NewSpanContext(ctx))
+func (r *resourceType) CreateInMemoryBuild(ctx context.Context, plan atc.Plan, seqGen util.SequenceGenerator) (Build, error) {
+	return newRunningInMemoryCheckBuild(r.conn, r.lockFactory, r, plan, NewSpanContext(ctx), seqGen)
 }
 
 func scanResourceType(t *resourceType, row scannable) error {

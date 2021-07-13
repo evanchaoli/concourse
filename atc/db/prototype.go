@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"github.com/concourse/concourse/atc/util"
 	"strconv"
 	"time"
 
@@ -43,7 +44,7 @@ type Prototype interface {
 	CheckPlan(atc.Version, time.Duration, ResourceTypes, atc.Source) atc.CheckPlan
 	CreateBuild(context.Context, bool, atc.Plan) (Build, bool, error)
 
-	CreateInMemoryBuild(context.Context, atc.Plan) (Build, error)
+	CreateInMemoryBuild(context.Context, atc.Plan, util.SequenceGenerator) (Build, error)
 
 	Version() atc.Version
 
@@ -235,7 +236,7 @@ func (p *prototype) CreateBuild(ctx context.Context, manuallyTriggered bool, pla
 	return build, true, nil
 }
 
-func (p *prototype) CreateInMemoryBuild(context.Context, atc.Plan) (Build, error) {
+func (p *prototype) CreateInMemoryBuild(context.Context, atc.Plan, util.SequenceGenerator) (Build, error) {
 	panic("not implemented")
 }
 

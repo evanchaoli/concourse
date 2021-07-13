@@ -227,17 +227,24 @@ func (c resourceConfigCheckSessionContainerOwner) Create(tx Tx, workerName strin
 	}, nil
 }
 
+// TODO: add plan id and team id
 // NewInMemoryCheckBuildContainerOwner references a in-memory check build.
 func NewInMemoryCheckBuildContainerOwner(
 	buildID int,
+	planID atc.PlanID,
+	teamID int,
 ) ContainerOwner {
 	return inMemoryCheckBuildContainerOwner{
 		BuildID: buildID,
+		PlanID:  planID,
+		TeamID:  teamID,
 	}
 }
 
 type inMemoryCheckBuildContainerOwner struct {
 	BuildID int
+	PlanID  atc.PlanID
+	TeamID  int
 }
 
 // Find return a query criteria of `build_id`, it would not find the build as
@@ -253,5 +260,7 @@ func (c inMemoryCheckBuildContainerOwner) Create(Tx, string) (map[string]interfa
 func (c inMemoryCheckBuildContainerOwner) sqlMap() map[string]interface{} {
 	return map[string]interface{}{
 		"in_memory_check_build_id": c.BuildID,
+		"plan_id":                  c.PlanID,
+		"team_id":                  c.TeamID,
 	}
 }

@@ -97,12 +97,12 @@ func (s *scanner) scanResources(ctx context.Context, resources []db.Resource, re
 	batchSize := totalSize
 	index := 0
 	if s.chunks > 1 {
-		batchSize := 1 + totalSize/s.chunks
+		batchSize = 1 + totalSize/s.chunks
 		if batchSize > totalSize {
 			batchSize = totalSize
 		}
 
-		for index < totalSize && lastScannedId > resources[index].ID() {
+		for index < totalSize && lastScannedId >= resources[index].ID() {
 			index++
 		}
 	}
@@ -126,6 +126,9 @@ func (s *scanner) scanResources(ctx context.Context, resources []db.Resource, re
 			}()
 			defer waitGroup.Done()
 
+			if resource.ID() == 109302 {
+				logger.Info("EVAN:scan")
+			}
 			s.check(ctx, resource, resourceTypes)
 		}(resource, resourceTypes)
 	}
@@ -146,12 +149,12 @@ func (s *scanner) scanResourceTypes(ctx context.Context, resourceTypes db.Resour
 	batchSize := totalSize
 	index := 0
 	if s.chunks > 1 {
-		batchSize := 1 + totalSize/s.chunks
+		batchSize = 1 + totalSize/s.chunks
 		if batchSize > totalSize {
 			batchSize = totalSize
 		}
 
-		for index < totalSize && lastScannedId > resourceTypes[index].ID() {
+		for index < totalSize && lastScannedId >= resourceTypes[index].ID() {
 			index++
 		}
 	}

@@ -1,8 +1,10 @@
 package db
 
 import (
+	"code.cloudfoundry.org/lager"
 	"context"
 	"fmt"
+	"github.com/concourse/concourse/atc/util"
 	"time"
 
 	"code.cloudfoundry.org/lager/lagerctx"
@@ -16,6 +18,7 @@ import (
 type Checkable interface {
 	PipelineRef
 
+	ID() int
 	Name() string
 	TeamID() int
 	ResourceConfigScopeID() int
@@ -35,7 +38,7 @@ type Checkable interface {
 	CheckPlan(atc.Version, time.Duration, ResourceTypes, atc.Source) atc.CheckPlan
 	CreateBuild(context.Context, bool, atc.Plan) (Build, bool, error)
 
-	CreateInMemoryBuild(context.Context, atc.Plan) (Build, error)
+	CreateInMemoryBuild(context.Context, atc.Plan, util.SequenceGenerator) (Build, error)
 
 	Reload() (bool, error)
 }
@@ -60,7 +63,8 @@ type checkFactory struct {
 	defaultCheckInterval            time.Duration
 	defaultWithWebhookCheckInterval time.Duration
 
-	checkBuildChan chan<-Build
+	checkBuildChan    chan<- Build
+	sequenceGenerator util.SequenceGenerator
 }
 
 type CheckDurations struct {
@@ -75,7 +79,8 @@ func NewCheckFactory(
 	secrets creds.Secrets,
 	varSourcePool creds.VarSourcePool,
 	durations CheckDurations,
-	checkBuildChan chan<-Build,
+	checkBuildChan chan<- Build,
+	sequenceGenerator util.SequenceGenerator,
 ) CheckFactory {
 	return &checkFactory{
 		conn:        conn,
@@ -90,7 +95,8 @@ func NewCheckFactory(
 		defaultCheckInterval:            durations.Interval,
 		defaultWithWebhookCheckInterval: durations.IntervalWithWebhook,
 
-		checkBuildChan: checkBuildChan,
+		checkBuildChan:    checkBuildChan,
+		sequenceGenerator: sequenceGenerator,
 	}
 }
 
@@ -124,6 +130,9 @@ func (c *checkFactory) TryCreateCheck(ctx context.Context, checkable Checkable, 
 		// more precise.
 		if time.Now().Before(checkable.LastCheckStartTime().Add(interval)) {
 			// skip creating the check if its interval hasn't elapsed yet
+			if checkable.ID() == 109302 {
+				logger.Info("EVAN:not-reach-to-interval", lager.Data{"interval": interval})
+			}
 			return nil, false, nil
 		}
 	}
@@ -145,12 +154,15 @@ func (c *checkFactory) TryCreateCheck(ctx context.Context, checkable Checkable, 
 
 		return build, true, nil
 	} else {
-		build, err := checkable.CreateInMemoryBuild(ctx, plan)
+		build, err := checkable.CreateInMemoryBuild(ctx, plan, c.sequenceGenerator)
 		if err != nil {
 			return nil, false, err
 		}
 
 		logger.Debug("created-in-memory-check-build", build.LagerData())
+		if checkable.ID() == 109302 {
+			logger.Debug("EVAN:created-in-memory-check-build", build.LagerData())
+		}
 		c.checkBuildChan <- build
 
 		return build, true, nil
