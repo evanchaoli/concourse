@@ -75,7 +75,7 @@ func (s *TrackerSuite) TestTrackRunsStartedBuilds() {
 		return engineBuild
 	}
 
-	_, err := s.tracker.Run(context.TODO(), "")
+	err := s.tracker.Run(context.TODO())
 	s.NoError(err)
 
 	s.ElementsMatch([]int{
@@ -118,7 +118,7 @@ func (s *TrackerSuite) TestTrackerDoesntCrashWhenOneBuildPanic() {
 		return fakeEngineBuild
 	}
 
-	_, err := s.tracker.Run(context.TODO(), "")
+	err := s.tracker.Run(context.TODO())
 	s.NoError(err)
 
 	s.ElementsMatch([]int{
@@ -157,12 +157,12 @@ func (s *TrackerSuite) TestTrackDoesntTrackAlreadyRunningBuilds() {
 		return engineBuild
 	}
 
-	_, err := s.tracker.Run(context.TODO(), "")
+	err := s.tracker.Run(context.TODO())
 	s.NoError(err)
 
 	<-running
 
-	_, err = s.tracker.Run(context.TODO(), "")
+	err = s.tracker.Run(context.TODO())
 	s.NoError(err)
 
 	select {
