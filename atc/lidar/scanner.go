@@ -1,11 +1,11 @@
 package lidar
 
 import (
-	"code.cloudfoundry.org/lager/lagerctx"
 	"context"
 	"strconv"
 	"sync"
 
+	"code.cloudfoundry.org/lager/lagerctx"
 	"github.com/concourse/concourse/atc/db"
 	"github.com/concourse/concourse/atc/metric"
 	"github.com/concourse/concourse/atc/util"
@@ -20,12 +20,8 @@ func NewScanner(checkFactory db.CheckFactory) *scanner {
 
 type scanner struct {
 	checkFactory db.CheckFactory
-	chunks       int
 }
 
-// Run processes 1/chunks of resources and resource types in each period, which
-// helps distribute Lidar checks to different ATCs. The last scanned resource id
-// and resource type id are stored in the component last run result.
 func (s *scanner) Run(ctx context.Context) error {
 	logger := lagerctx.FromContext(ctx)
 
@@ -56,7 +52,6 @@ func (s *scanner) Run(ctx context.Context) error {
 func (s *scanner) scanResources(ctx context.Context, resources []db.Resource, resourceTypes db.ResourceTypes) {
 	logger := lagerctx.FromContext(ctx)
 	waitGroup := new(sync.WaitGroup)
-
 	for _, resource := range resources {
 		waitGroup.Add(1)
 
@@ -69,9 +64,6 @@ func (s *scanner) scanResources(ctx context.Context, resources []db.Resource, re
 			}()
 			defer waitGroup.Done()
 
-			if resource.ID() == 109302 {
-				logger.Info("EVAN:scan")
-			}
 			s.check(ctx, resource, resourceTypes)
 		}(resource, resourceTypes)
 	}
@@ -81,7 +73,6 @@ func (s *scanner) scanResources(ctx context.Context, resources []db.Resource, re
 func (s *scanner) scanResourceTypes(ctx context.Context, resourceTypes db.ResourceTypes) {
 	logger := lagerctx.FromContext(ctx)
 	waitGroup := new(sync.WaitGroup)
-
 	for _, resourceType := range resourceTypes {
 		waitGroup.Add(1)
 		go func(resourceType db.ResourceType, resourceTypes db.ResourceTypes) {

@@ -227,7 +227,6 @@ func (c resourceConfigCheckSessionContainerOwner) Create(tx Tx, workerName strin
 	}, nil
 }
 
-// TODO: add plan id and team id
 // NewInMemoryCheckBuildContainerOwner references a in-memory check build.
 func NewInMemoryCheckBuildContainerOwner(
 	buildID int,

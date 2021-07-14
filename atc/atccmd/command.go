@@ -7,7 +7,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/concourse/concourse/atc/util"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -48,6 +47,7 @@ import (
 	"github.com/concourse/concourse/atc/scheduler"
 	"github.com/concourse/concourse/atc/scheduler/algorithm"
 	"github.com/concourse/concourse/atc/syslog"
+	"github.com/concourse/concourse/atc/util"
 	"github.com/concourse/concourse/atc/worker"
 	"github.com/concourse/concourse/atc/worker/image"
 	"github.com/concourse/concourse/atc/wrappa"
@@ -61,7 +61,6 @@ import (
 	"github.com/concourse/concourse/web"
 	"github.com/concourse/flag"
 	"github.com/concourse/retryhttp"
-	"gopkg.in/square/go-jose.v2/jwt"
 
 	"github.com/cppforlife/go-semi-semantic/version"
 	"github.com/hashicorp/go-multierror"
@@ -75,6 +74,7 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/oauth2"
 	"golang.org/x/time/rate"
+	"gopkg.in/square/go-jose.v2/jwt"
 	"gopkg.in/yaml.v2"
 
 	// dynamically registered metric emitters
