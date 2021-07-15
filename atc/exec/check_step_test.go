@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/concourse/concourse/atc/db/lock"
 	"io"
 	"time"
 
@@ -325,15 +326,9 @@ var _ = Describe("CheckStep", func() {
 					runCtx, owner, containerSpec, metadata, processSpec, startEventDelegate, resource = fakeClient.RunCheckStepArgsForCall(0)
 				})
 
-				//It("uses ResourceConfigCheckSessionOwner", func() {
-				//	expected := db.NewBuildStepContainerOwner(
-				//		678,
-				//		planID,
-				//		345,
-				//	)
-				//
-				//	Expect(owner).To(Equal(expected))
-				//})
+				It("get container owner from delegate", func(){
+					Expect(fakeDelegate.ContainerOwnerCallCount()).To(Equal(2))
+				})
 
 				Context("when the plan is for a resource", func() {
 					BeforeEach(func() {
@@ -425,6 +420,8 @@ var _ = Describe("CheckStep", func() {
 							tracing.ConfigureTraceProvider(oteltest.NewTracerProvider())
 
 							spanCtx, buildSpan = tracing.StartSpan(ctx, "build", nil)
+							// Inject a kv so that we can identify this context.
+							spanCtx = context.WithValue(spanCtx, "foo", "bar")
 							fakeDelegate.StartSpanReturns(spanCtx, buildSpan)
 						})
 
@@ -432,10 +429,9 @@ var _ = Describe("CheckStep", func() {
 							tracing.Configured = false
 						})
 
-						// TODO: fix this test
-						//It("propagates span context to the worker client", func() {
-						//	Expect(runCtx).To(Equal(rewrapLogger(spanCtx)))
-						//})
+						It("propagates span context to the worker client", func() {
+							Expect(runCtx.Value("foo")).To(Equal("bar"))
+						})
 
 						It("populates the TRACEPARENT env var", func() {
 							Expect(containerSpec.Env).To(ContainElement(MatchRegexp(`TRACEPARENT=.+`)))
@@ -792,6 +788,51 @@ var _ = Describe("CheckStep", func() {
 				It("errors", func() {
 					Expect(stepErr).To(HaveOccurred())
 					Expect(errors.Is(stepErr, expectedErr)).To(BeTrue())
+				})
+			})
+		})
+
+		Context("not running", func() {
+			BeforeEach(func() {
+				fakeDelegate.WaitToRunReturns(lock.NoopLock{}, false, nil)
+			})
+
+			Context("not a periodic check", func() {
+				BeforeEach(func() {
+					checkPlan.Resource = ""
+					checkPlan.ResourceType = ""
+					checkPlan.Prototype = ""
+					fakeDelegate.IsManuallyTriggeredReturns(false)
+				})
+
+				It("should update state", func() {
+					Expect(fakeResourceConfigScope.LatestVersionCallCount()).To(Equal(1))
+				})
+			})
+
+			Context("a periodic check", func() {
+				BeforeEach(func() {
+					checkPlan.Resource = "some-resource"
+				})
+
+				Context("triggered manually", func() {
+					BeforeEach(func() {
+						fakeDelegate.IsManuallyTriggeredReturns(true)
+					})
+
+					It("should update state", func() {
+						Expect(fakeResourceConfigScope.LatestVersionCallCount()).To(Equal(1))
+					})
+				})
+
+				Context("triggered by lidar", func() {
+					BeforeEach(func() {
+						fakeDelegate.IsManuallyTriggeredReturns(false)
+					})
+
+					It("should not update state", func() {
+						Expect(fakeResourceConfigScope.LatestVersionCallCount()).To(Equal(0))
+					})
 				})
 			})
 		})

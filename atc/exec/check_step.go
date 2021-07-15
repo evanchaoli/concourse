@@ -46,6 +46,8 @@ type CheckDelegate interface {
 	PointToCheckedConfig(db.ResourceConfigScope) error
 	UpdateScopeLastCheckStartTime(db.ResourceConfigScope) (bool, int, error)
 	UpdateScopeLastCheckEndTime(db.ResourceConfigScope, bool) (bool, error)
+
+	IsManuallyTriggered() bool
 }
 
 func NewCheckStep(
@@ -214,7 +216,7 @@ func (step *CheckStep) run(ctx context.Context, state RunState, delegate CheckDe
 		if err != nil {
 			return false, fmt.Errorf("update check end time: %w", err)
 		}
-	} else if !step.plan.IsPeriodic() {
+	} else if !step.plan.IsPeriodic() || delegate.IsManuallyTriggered() {
 		latestVersion, found, err := scope.LatestVersion()
 		if err != nil {
 			return false, fmt.Errorf("get latest version: %w", err)
@@ -344,13 +346,9 @@ func (step *CheckStep) runCheck(
 }
 
 func (step *CheckStep) containerOwner(delegate CheckDelegate, resourceConfig db.ResourceConfig) db.ContainerOwner {
-	if step.plan.Resource == "" && step.plan.ResourceType == "" {
+	if !step.plan.IsPeriodic() {
 		return delegate.ContainerOwner(step.planID)
 	}
-
-	//if resourceConfig.CreatedByBaseResourceType() != nil && resourceConfig.CreatedByBaseResourceType().UniqueVersionHistory {
-	//	return delegate.ContainerOwner(step.planID)
-	//}
 
 	expires := db.ContainerOwnerExpiries{
 		Min: 5 * time.Minute,

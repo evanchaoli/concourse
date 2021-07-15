@@ -90,7 +90,7 @@ func (d *checkDelegate) WaitToRun(ctx context.Context, scope db.ResourceConfigSc
 	if !d.build.IsManuallyTriggered() && d.plan.Resource != "" {
 		err := d.limiter.Wait(ctx)
 		if err != nil {
-			return nil, false, fmt.Errorf("EVAN:rate limit: %w", err)
+			return nil, false, fmt.Errorf("rate limit: %w", err)
 		}
 	}
 
@@ -139,9 +139,6 @@ func (d *checkDelegate) WaitToRun(ctx context.Context, scope db.ResourceConfigSc
 			if acquired {
 				lock = scopeLock
 			} else {
-				if d.build.ResourceID() == 109302 {
-					logger.Info("EVAN:no need to run")
-				}
 				return lock, false, nil
 			}
 		}
@@ -150,7 +147,7 @@ func (d *checkDelegate) WaitToRun(ctx context.Context, scope db.ResourceConfigSc
 	lastCheck, err := scope.LastCheck()
 	if err != nil {
 		if releaseErr := lock.Release(); releaseErr != nil {
-			logger.Error("EVAN:failed-to-release-lock", releaseErr)
+			logger.Error("failed-to-release-lock", releaseErr)
 		}
 		return nil, false, err
 	}
@@ -287,7 +284,7 @@ func (d *checkDelegate) resource() (db.Resource, bool, error) {
 	}
 
 	if !found {
-		return nil, false, fmt.Errorf("resource '%s' deleted, pipeline %s, team %s", d.plan.Resource, pipeline.Name(), pipeline.TeamName())
+		return nil, false, fmt.Errorf("resource '%s' deleted", d.plan.Resource)
 	}
 
 	d.cachedResource = resource
@@ -349,4 +346,8 @@ func (d *checkDelegate) prototype() (db.Prototype, bool, error) {
 	d.cachedPrototype = prototype
 
 	return d.cachedPrototype, true, nil
+}
+
+func (d *checkDelegate) IsManuallyTriggered() bool {
+	return d.build.IsManuallyTriggered()
 }

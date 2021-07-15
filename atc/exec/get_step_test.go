@@ -354,15 +354,6 @@ var _ = Describe("GetStep", func() {
 		})
 	})
 
-	// TODO: owner test should be moved to GetDelegate test.
-	//It("calls RunGetStep with the correct ContainerOwner", func() {
-	//	Expect(owner).To(Equal(db.NewBuildStepContainerOwner(
-	//		stepMetadata.BuildID,
-	//		atc.PlanID(planID),
-	//		stepMetadata.TeamID,
-	//	)))
-	//})
-
 	It("calls RunGetStep with the correct ContainerSpec", func() {
 		Expect(containerSpec).To(Equal(
 			worker.ContainerSpec{
@@ -375,6 +366,14 @@ var _ = Describe("GetStep", func() {
 				Env:      stepMetadata.Env(),
 			},
 		))
+	})
+
+	It("get resource cache owner from delegate", func(){
+		Expect(fakeDelegate.ResourceCacheUserCallCount()).To(Equal(1))
+	})
+
+	It("get container owner from delegate", func(){
+		Expect(fakeDelegate.ContainerOwnerCallCount()).To(Equal(1))
 	})
 
 	Describe("worker selection", func() {
