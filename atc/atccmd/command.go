@@ -1028,7 +1028,7 @@ func (cmd *RunCommand) backendComponents(
 		Interval:            cmd.ResourceCheckingInterval,
 		IntervalWithWebhook: cmd.ResourceWithWebhookCheckingInterval,
 		Timeout:             cmd.GlobalResourceCheckTimeout,
-	}, checkBuildsChan, util.NewSequenceGenerator())
+	}, checkBuildsChan, util.NewSequenceGenerator(1))
 	dbPipelineFactory := db.NewPipelineFactory(dbConn, lockFactory)
 	dbJobFactory := db.NewJobFactory(dbConn, lockFactory)
 	dbPipelineLifecycle := db.NewPipelineLifecycle(dbConn, lockFactory)

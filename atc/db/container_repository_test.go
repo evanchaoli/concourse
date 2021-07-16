@@ -453,7 +453,7 @@ var _ = Describe("ContainerRepository", func() {
 
 			BeforeEach(func() {
 				var err error
-				build, err = defaultResource.CreateInMemoryBuild(context.Background(), atc.Plan{}, util.NewSequenceGenerator())
+				build, err = defaultResource.CreateInMemoryBuild(context.Background(), atc.Plan{}, util.NewSequenceGenerator(1))
 				Expect(err).NotTo(HaveOccurred())
 
 				err = build.OnCheckBuildStart()
