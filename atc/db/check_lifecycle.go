@@ -45,7 +45,7 @@ func (cl *checkLifecycle) DeleteCompletedChecks() error {
         FROM resource_config_scopes
         WHERE last_check_build_id IS NOT NULL
       )
-      DELETE FROM check_build_events c USING resource_builds WHERE NOT EXISTS (select 1 FROM resource_builds where c.build_id = build_id)
+      DELETE FROM check_build_events WHERE build_id NOT IN (SELECT build_id FROM resource_builds)
     `)
 
 	if err1 != nil {
